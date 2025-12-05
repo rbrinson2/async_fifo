@@ -26,10 +26,11 @@ all: build
 
 build: $(OBJ_DIR)/V$(TOP) 
 
+# Build the final executable
 $(OBJ_DIR)/V$(TOP): $(OBJS_LIST)
 	verilator -j $(THREADS) --exe --binary $(OBJS) -LDFLAGS "$(LIBS)" $(SRC_DIR)/$(TOP).sv $(TB_DIR)/$(TOP)_tb.cpp
 
-
+# Build all the libraries
 $(OBJ_DIR)/%.o: $(SRC_DIR)/%.sv
 	verilator -j $(THREADS) --lib-create $(basename $(notdir $<)) -I$(SRC_DIR) --cc --build $<
 
