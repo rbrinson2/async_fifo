@@ -1,15 +1,14 @@
 
 
-module fifo (
-    input  logic clk,
-    rst,
-    output logic out
+module fifo #(
+    parameter integer DATAWIDTH  = 16,
+    parameter integer ADDR_WIDTH = $clog2(DATAWIDTH)
+) (
+    input logic i_clk,
+    i_rst_n,
+    input logic [ADDR_WIDTH - 1 : 0] w_addr
 );
 
 
-  always_ff @(clk) begin : blockName
-    if (rst) out <= 'b0;
-    else out <= ~out;
-  end
 
 endmodule

@@ -11,11 +11,5 @@ module top (
   wire out_wire;
 
 
-  fifo #() fifo (
-      .clk(clk),
-      .rst(rst),
-      .out(out_wire)
-  );
-
 
 endmodule
