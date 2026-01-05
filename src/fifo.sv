@@ -10,5 +10,12 @@ module fifo #(
 );
 
 
+  always_ff @(posedge i_clk) begin
+    if (i_rst_n) begin
+
+    end
+  end
+
+
 
 endmodule

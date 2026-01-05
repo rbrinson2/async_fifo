@@ -3,6 +3,7 @@
 \usepackage{amssymb}
 \usepackage{xcolor}
 \usepackage{circuitikz}
+\usepackage{tikz}
 
 
 \title{Block Diagram}
@@ -13,7 +14,28 @@
 	
 	
 	\begin{circuitikz}
-	    \draw (0,0) to[R] ++(2,0);
+	    \ctikzset{multipoles/thickness=3}
+	    \ctikzset{
+	        multipoles/dipchip/width=2,
+	        multipoles/dipchip/pin spacing=0.5
+        }
+	    \draw (0,0) 
+	        node[
+	            dipchip, 
+	            num pins=10,
+	            no topmark, 
+	            external pins width=0.0,
+	            hide numbers
+	        ](fifo){FIFO};
+	        
+        \draw[line width=2] (fifo.pin 1) to[multiwire, l_=\tiny DATAWIDTH] ++(-4,0) node[left]{\small wdata};
+        \draw (fifo.pin 2) -- ++(-4,0) node[left]{\small wen};
+        \draw (fifo.pin 3) -- ++(-4,0) node[left]{\small full};
+        \draw (fifo.pin 5) -- ++(-4,0) node[left]{\small reset\_n};
+        
+        \draw[line width=2] (fifo.pin 10) to[multiwire, l=\tiny DATAWIDTH] ++(4,0) node[right]{\small rdata};
+        \draw (fifo.pin 9) -- ++(4,0) node[right]{\small ren};
+        \draw (fifo.pin 8) -- ++(4,0) node[right]{\small empty};
 	\end{circuitikz}
 	
 \end{document}
