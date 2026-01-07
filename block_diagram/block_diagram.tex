@@ -12,30 +12,52 @@
 
 \begin{document}
 	
-	
+	\section{Synchronous FIFO}
+	\vspace{2cm}
 	\begin{circuitikz}
 	    \ctikzset{multipoles/thickness=3}
 	    \ctikzset{
 	        multipoles/dipchip/width=2,
-	        multipoles/dipchip/pin spacing=0.5
+	        multipoles/dipchip/pin spacing=0.75
         }
 	    \draw (0,0) 
 	        node[
 	            dipchip, 
-	            num pins=10,
+	            num pins=12,
 	            no topmark, 
 	            external pins width=0.0,
-	            hide numbers
+	            %hide numbers
 	        ](fifo){FIFO};
-	        
-        \draw[line width=2] (fifo.pin 1) to[multiwire, l_=\tiny DATAWIDTH] ++(-4,0) node[left]{\small wdata};
-        \draw (fifo.pin 2) -- ++(-4,0) node[left]{\small wen};
-        \draw (fifo.pin 3) -- ++(-4,0) node[left]{\small full};
-        \draw (fifo.pin 5) -- ++(-4,0) node[left]{\small reset\_n};
+	    
+	    
+	    % // ---------- Inputs ---------- \\
+	    \draw[<-] (fifo.pin 5) -- ++(-4,0) node[left]{\small reset\_n};
+        \draw[<-] (fifo.pin 6) -- ++(-4,0) node[left]{\small clk};
         
-        \draw[line width=2] (fifo.pin 10) to[multiwire, l=\tiny DATAWIDTH] ++(4,0) node[right]{\small rdata};
-        \draw (fifo.pin 9) -- ++(4,0) node[right]{\small ren};
-        \draw (fifo.pin 8) -- ++(4,0) node[right]{\small empty};
+	    % -- Writes --
+	    \draw[line width=2, <-] (fifo.pin 1) to[multiwire, l_=\tiny FIFO\_DATAWIDTH] ++(-4,0) node[left]{\small wdata};
+	    \draw[<-] (fifo.pin 3) -- ++(-4,0) node[left]{\small wen};
+	    
+	    % -- Reads --
+	    \draw[<-] (fifo.pin 4) -- ++(-4,0) node[left]{\small ren};
+	    
+	    % -- Flags --
+
+        % // ---------- Outputs ---------- \\
+        % -- Writes --
+        \draw[->, line width=2] (fifo.pin 10) to[multiwire, l=\tiny FIFO\_PTR] ++(4,0) node[right]{room\_avail};
+	    % -- Reads --
+	    \draw[->, line width=2] (fifo.pin 12) to[multiwire, l=\tiny FIFO\_DATAWIDTH] ++(4,0) node[right]{\small rdata};
+	    \draw[->, line width=2] (fifo.pin 11) to[multiwire, l=\tiny FIFO\_PTR] ++(4,0) node[right]{data\_avail};
+	    % -- Flags --
+	    \draw[->] (fifo.pin 7) -- ++(4,0) node[right]{\small full};
+	    \draw[->] (fifo.pin 8) -- ++(4,0) node[right]{\small empty};
+        
+        
+        
 	\end{circuitikz}
+	
+	\newpage
+	\section{Asynchrnous FIFO}
 	
 \end{document}
