@@ -28,7 +28,7 @@ build: $(OBJ_DIR)/V$(TOP)
 
 # Build the final executable
 $(OBJ_DIR)/V$(TOP): $(OBJS_LIST)
-	verilator -j $(THREADS) --Wno-fatal --exe --binary $(OBJS) -LDFLAGS "$(LIBS)" $(SRC_DIR)/$(TOP).sv $(TB_DIR)/$(TOP)_tb.cpp
+	verilator -j $(THREADS) --trace --Wno-fatal --exe --binary $(OBJS) -LDFLAGS "$(LIBS)" $(SRC_DIR)/$(TOP).sv $(TB_DIR)/$(TOP)_tb.cpp
 
 # Build all the libraries
 $(OBJ_DIR)/%.o: $(SRC_DIR)/%.sv
