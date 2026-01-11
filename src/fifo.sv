@@ -67,10 +67,10 @@ module fifo #(
 
   assign full_next = (num_avail_next == logic'(FIFO_DEPTH - 1));
   assign empty_next = (num_avail_next == 'b0);
+  assign data_avail = num_avail_next;
 
   always_ff @(posedge clk or negedge rst_n) begin
-
-
+    
   end
 
 
