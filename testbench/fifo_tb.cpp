@@ -17,7 +17,7 @@ int main(int argc, char *argv[]) {
 
   std::unique_ptr<Vfifo> fifo(new Vfifo(contextp.get(), "TOP"));
 
-  fifo->rst_n = !0;
+  fifo->rst_n = 0;
   fifo->clk = 1;
   fifo->wen = 0;
   fifo->ren = 0;
@@ -28,10 +28,10 @@ int main(int argc, char *argv[]) {
     fifo->clk = !fifo->clk;
 
     if (contextp->time() > 5) {
-      fifo->rst_n = !1;
+      fifo->rst_n = 1;
     }
 
-    if (!fifo->rst_n) {
+    if (fifo->rst_n) {
       if (contextp->time() > 10 && contextp->time() < 20) {
         fifo->wen = 1;
       }

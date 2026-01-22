@@ -83,6 +83,7 @@ module fifo #(
       full <= 1'b0;
       empty <= 1'b0;
       room_avail <= DEPTH;
+      rdata <= 'b0;
     end
 
     else begin
@@ -92,6 +93,9 @@ module fifo #(
       full <= full_next;
       empty <= empty_next;
       room_avail <= room_avail_next;
+
+      rdata <= mem[rptr];
+      mem[wptr] <= wdata;
     end
   end
 
