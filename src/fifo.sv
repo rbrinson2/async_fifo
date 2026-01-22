@@ -65,8 +65,14 @@ module fifo #(
     num_entries_next = num_entries;
 
     if (wen && ren) num_entries_next = num_entries;
-    else if (wen) num_entries_next = num_entries + 1'b1;
-    else if (ren) num_entries_next = num_entries - 1'b1;
+    else if (wen) begin 
+      if (num_entries == DEPTH) num_entries_next = num_entries;
+      else num_entries_next = num_entries + 1'b1;
+    end
+    else if (ren) begin
+      if (num_entries == 'd0) num_entries_next = num_entries;
+      else num_entries_next = num_entries - 1'b1;
+    end
 
   end : numEntriesCalculation
 
