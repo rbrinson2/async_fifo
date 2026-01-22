@@ -21,14 +21,16 @@ LIBS := $(MODS:%=lib%.a)
 OBJS := $(MODS:%=%.o)
 OBJS_LIST := $(foreach obj, $(OBJS), $(OBJ_DIR)/$(obj))
 
+VERILATOR_FLAGS := --trace --Wno-fatal --exe --cc --build
+
 .PHONY: all
 all: build
 
 build: $(OBJ_DIR)/V$(TOP) 
 
 # Build the final executable
-$(OBJ_DIR)/V$(TOP): $(OBJS_LIST)
-	verilator -j $(THREADS) --trace --Wno-fatal --exe --binary $(OBJS) -LDFLAGS "$(LIBS)" $(SRC_DIR)/$(TOP).sv $(TB_DIR)/$(TOP)_tb.cpp
+$(OBJ_DIR)/V$(TOP): $(TB_DIR)/$(TOP)_tb.cpp $(OBJS_LIST)
+	verilator -j $(THREADS) $(VERILATOR_FLAGS) $(OBJS) -LDFLAGS "$(LIBS)" $(SRC_DIR)/$(TOP).sv $<
 
 # Build all the libraries
 $(OBJ_DIR)/%.o: $(SRC_DIR)/%.sv

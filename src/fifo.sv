@@ -14,7 +14,7 @@ module fifo #(
     input logic wen,
 
     // -- Read --
-    output logic ren,
+    input logic ren,
 
     // -- Flags --
     
@@ -73,6 +73,11 @@ module fifo #(
     
   end
 
+
+  initial begin
+    $dumpfile("logs/fifo.vcd");
+    $dumpvars();
+  end
 
 
 endmodule
