@@ -6,6 +6,7 @@ THREADS ?= 0
 OBJ_DIR := ./obj_dir
 SRC_DIR := ./src
 TB_DIR := ./testbench
+LOG_DIR := ./logs
 
 
 # Find all the source code
@@ -24,7 +25,11 @@ OBJS_LIST := $(foreach obj, $(OBJS), $(OBJ_DIR)/$(obj))
 VERILATOR_FLAGS := --trace --Wno-fatal --exe --cc --build
 
 .PHONY: all
-all: build
+all: build run
+
+run: $(OBJ_DIR)/V$(TOP)
+	$(OBJ_DIR)/V$(TOP) +trace
+	gtkwave $(LOG_DIR)/$(TOP).vcd
 
 build: $(OBJ_DIR)/V$(TOP) 
 
@@ -40,4 +45,4 @@ $(OBJ_DIR)/%.o: $(SRC_DIR)/%.sv
 
 .PHONY: clean
 clean:
-	rm -r obj_dir/
+	rm -r obj_dir/ logs/
