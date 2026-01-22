@@ -26,6 +26,17 @@ int main(int argc, char *argv[]) {
   while (contextp->time() < 100) {
     contextp->timeInc(1);
     fifo->clk = !fifo->clk;
+
+    if (contextp->time() > 5) {
+      fifo->rst_n = !1;
+    }
+
+    if (!fifo->rst_n) {
+      if (contextp->time() > 10 && contextp->time() < 20) {
+        fifo->wen = 1;
+      }
+    }
+
     fifo->eval();
   }
 
