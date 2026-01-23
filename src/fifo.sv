@@ -44,8 +44,11 @@ module fifo #(
     wptr_next = wptr;
 
     if (wen) begin
-      if (wptr == DEPTH) wptr_next = 'b0;
-      else wptr_next += 1'b1;
+      if (full | empty) wptr_next = wptr;
+      else begin
+        if (wptr == DEPTH) wptr_next = 'b0;
+        else wptr_next += 1'b1;
+      end
     end
 
   end : writePointerLogic
@@ -54,8 +57,11 @@ module fifo #(
 
     rptr_next = rptr;
     if (ren) begin
-      if (rptr == DEPTH) rptr_next = 'b0;
-      else rptr_next += 1'b1;
+      if (full | empty) rptr_next = rptr;
+      else begin
+        if (rptr == DEPTH) rptr_next = 'b0;
+        else rptr_next += 1'b1;
+      end
     end
 
   end : readPointerLogic
