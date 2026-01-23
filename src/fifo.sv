@@ -1,8 +1,8 @@
 
 
 module fifo #(
-    parameter FIFO_DATAWIDTH = 16,
-    parameter FIFO_DEPTH = 32,
+    parameter FIFO_DATAWIDTH = 32,
+    parameter FIFO_DEPTH = 16,
     parameter FIFO_PTR = $clog2(FIFO_DEPTH)
 ) (
     input logic clk,
@@ -32,13 +32,26 @@ module fifo #(
 
   localparam logic [FIFO_PTR:0] DEPTH = FIFO_DEPTH[FIFO_PTR:0];
 
-  logic [FIFO_DATAWIDTH-1:0] mem [FIFO_DEPTH-1:0];
+  //logic [FIFO_DATAWIDTH-1:0] mem [FIFO_DEPTH-1:0];
 
   logic [FIFO_PTR:0] wptr, wptr_next;
   logic [FIFO_PTR:0] rptr, rptr_next;
   logic [FIFO_PTR:0] num_entries, num_entries_next;
   logic [FIFO_PTR:0] room_avail_next;
   logic full_next, empty_next;
+  
+
+  sram #(
+   ) sram0 (
+    .w_clk (clk),
+    .wen   (wen),
+    .rd_clk(clk),
+    .ren   (ren),
+    .wptr  (wptr),
+    .rptr  (rptr),
+    .wdata (wdata),
+    .rdata (rdata)
+  );
 
   always_ff @(*) begin : writePointerLogic
     wptr_next = wptr;
@@ -89,7 +102,6 @@ module fifo #(
       full <= 1'b0;
       empty <= 1'b0;
       room_avail <= DEPTH;
-      rdata <= 'b0;
     end
 
     else begin
@@ -99,9 +111,6 @@ module fifo #(
       full <= full_next;
       empty <= empty_next;
       room_avail <= room_avail_next;
-
-      rdata <= mem[rptr];
-      mem[wptr] <= wdata;
     end
   end
 
