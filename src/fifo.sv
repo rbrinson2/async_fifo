@@ -42,6 +42,8 @@ module fifo #(
   
 
   sram #(
+    .SRAM_DATAWIDTH(FIFO_DATAWIDTH),
+    .SRAM_DEPTH(FIFO_DEPTH)
    ) sram0 (
     .w_clk (clk),
     .wen   (wen),
