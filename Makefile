@@ -11,9 +11,9 @@ LOG_DIR := ./logs
 
 # Find all the source code
 SRC := $(shell find $(SRC_DIR) -name '*.sv')
+SRC := $(filter-out $(TOP).sv, $(SRC))
 
 
-VERILATOR_FLAGS := --trace --Wno-fatal --exe --cc --build
 BUILD_FLAGS := --trace --Wno-fatal --exe --cc --build
 
 .PHONY: all
@@ -25,7 +25,7 @@ run: $(OBJ_DIR)/V$(TOP)
 
 build: $(OBJ_DIR)/V$(TOP)
 
-$(OBJ_DIR)/V$(TOP): $(SRC) $(TB_DIR)/$(TOP)_tb.cpp 
+$(OBJ_DIR)/V$(TOP): $(TB_DIR)/$(TOP)_tb.cpp $(SRC_DIR)/$(TOP).sv $(SRC)
 	verilator -j $(THREADS) $(BUILD_FLAGS) $^
 
 

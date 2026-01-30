@@ -39,7 +39,6 @@ module fifo #(
   logic [FIFO_PTR:0] num_entries, num_entries_next;
   logic [FIFO_PTR:0] room_avail_next;
   logic full_next, empty_next;
-  
 
   sram #(
     .SRAM_DATAWIDTH(FIFO_DATAWIDTH),
@@ -49,8 +48,8 @@ module fifo #(
     .wen   (wen),
     .rd_clk(clk),
     .ren   (ren),
-    .wptr  (wptr),
-    .rptr  (rptr),
+    .s_wptr  (wptr),
+    .s_rptr  (rptr),
     .wdata (wdata),
     .rdata (rdata)
   );
