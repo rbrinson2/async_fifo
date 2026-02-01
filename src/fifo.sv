@@ -40,19 +40,23 @@ module fifo #(
   logic [FIFO_PTR:0] room_avail_next;
   logic full_next, empty_next;
 
+  wire [FIFO_DATAWIDTH-1:0] rdata_w;
+  wire [FIFO_DATAWIDTH-1:0] wdata_w;
+
   sram #(
     .SRAM_DATAWIDTH(FIFO_DATAWIDTH),
     .SRAM_DEPTH(FIFO_DEPTH)
    ) sram0 (
     .w_clk (clk),
-    .wen   (wen),
     .rd_clk(clk),
-    .ren   (ren),
-    .s_wptr  (wptr),
-    .s_rptr  (rptr),
-    .wdata (wdata),
-    .rdata (rdata)
+    .s_wptr  (wptr[FIFO_PTR-1:0]),
+    .s_rptr  (rptr[FIFO_PTR-1:0]),
+    .wdata (wdata_w),
+    .rdata (rdata_w)
   );
+
+  assign rdata = ren ? rdata_w : 'b0;
+  assign wdata_w = wen ? wdata : 'b0;
 
   always_ff @(*) begin : writePointerLogic
     wptr_next = wptr;

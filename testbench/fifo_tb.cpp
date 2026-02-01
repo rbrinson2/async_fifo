@@ -1,12 +1,8 @@
-#include <fstream>
-#include <iostream>
 #include <memory>
-#include <sstream>
-#include <string>
 #include <thread>
-#include <vector>
 
 #include <verilated.h>
+#include <verilated_cov.h>
 
 #include "Vfifo.h"
 
@@ -15,17 +11,21 @@
 #define HIGH 1
 #define LOW 0
 
-struct Action {
-  int time;
-  char op;
-  long data;
-};
+#define TEST_FULL_FLAG ctx->time() > 5 && ctx->time() < 20
+#define TEST_EMPTY_FLAG
+#define TEST_RW_OP
+#define TEST_RO_OP
+#define TEST_WO_OP
 
-std::vector<Action> parse_inp(std::ifstream &ifs);
+enum Test_Phase { FULL, EMPTY, RW, RO, WO };
+
 std::unique_ptr<VerilatedContext> init_ctx();
 std::unique_ptr<Vfifo> init_fifo(VerilatedContext *ctx);
 
 int main(int argc, char *argv[]) {
+  std::size_t data = 0;
+  Test_Phase tp = FULL;
+
   Verilated::mkdir("logs");
 
   auto ctx = init_ctx();
@@ -37,7 +37,31 @@ int main(int argc, char *argv[]) {
     fifo->clk = !fifo->clk;
 
     if (ctx->time() > RESET_DELAY) {
-      fifo->rst_n = 1;
+
+      fifo->rst_n = HIGH;
+
+      switch (tp) {
+      case FULL:
+        fifo->wen = HIGH;
+        if (fifo->clk == HIGH)
+          fifo->wdata = data++;
+        if (fifo->full == HIGH) {
+          tp = EMPTY;
+        }
+        break;
+      case EMPTY:
+        if (fifo->empty == HIGH)
+          tp = RW;
+        break;
+      case RW:
+        break;
+      case RO:
+        break;
+      case WO:
+        break;
+      default:
+        break;
+      }
     }
 
     fifo->eval();
@@ -45,31 +69,11 @@ int main(int argc, char *argv[]) {
 
   fifo->final();
 
+  ctx->statsPrintSummary();
+
   return 0;
 }
 
-std::vector<Action> parse_inp(std::ifstream &ifs) {
-  std::vector<Action> avec;
-  std::string timeStr, opStr, dataStr, line;
-  std::getline(ifs, line);
-
-  while (std::getline(ifs, line)) {
-    std::istringstream iss(line);
-    Action a;
-
-    std::getline(iss, timeStr, ',');
-    std::getline(iss, opStr, ',');
-    std::getline(iss, dataStr);
-
-    a.time = std::stoi(timeStr);
-    a.op = opStr[0];
-    a.data = dataStr.empty() ? 0 : std::stol(dataStr, 0, 16);
-
-    avec.push_back(a);
-  }
-
-  return avec;
-}
 std::unique_ptr<VerilatedContext> init_ctx() {
   auto ctx = std::make_unique<VerilatedContext>();
   ctx->debug(0);
@@ -82,10 +86,10 @@ std::unique_ptr<VerilatedContext> init_ctx() {
 
 std::unique_ptr<Vfifo> init_fifo(VerilatedContext *ctx) {
   auto fifo = std::make_unique<Vfifo>(ctx, "TOP");
-  fifo->rst_n = 0;
-  fifo->clk = 1;
-  fifo->wen = 0;
-  fifo->ren = 0;
+  fifo->rst_n = LOW;
+  fifo->clk = LOW;
+  fifo->wen = LOW;
+  fifo->ren = LOW;
   fifo->wdata = 0x0;
 
   return fifo;

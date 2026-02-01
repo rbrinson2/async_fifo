@@ -14,7 +14,8 @@ SRC := $(shell find $(SRC_DIR) -name '*.sv')
 SRC := $(filter-out $(TOP).sv, $(SRC))
 
 
-BUILD_FLAGS := --trace --Wno-fatal --exe --cc --build
+VERILATOR_FLAGS := --trace --Wno-fatal --exe --cc --build
+CONTROL_FLAGS := +librescan +libext+.v+.sv+.vh+.svh -y $(SRC_DIR)
 
 .PHONY: all
 all: build run
@@ -25,8 +26,8 @@ run: $(OBJ_DIR)/V$(TOP)
 
 build: $(OBJ_DIR)/V$(TOP)
 
-$(OBJ_DIR)/V$(TOP): $(TB_DIR)/$(TOP)_tb.cpp $(SRC_DIR)/$(TOP).sv $(SRC)
-	verilator -j $(THREADS) $(BUILD_FLAGS) $^
+$(OBJ_DIR)/V$(TOP): $(TB_DIR)/$(TOP)_tb.cpp $(SRC_DIR)/$(TOP).sv 
+	verilator -j $(THREADS) $(VERILATOR_FLAGS) $(CONTROL_FLAGS) $^
 
 
 .PHONY: clean
