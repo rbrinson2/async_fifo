@@ -107,21 +107,21 @@ module fifo #(
 
   always_ff @(posedge clk or negedge rst_n) begin
     if (!rst_n) begin
-      wptr <= 'd0;
-      rptr <= 'd0;
+      wptr        <= 'd0;
+      rptr        <= 'd0;
       num_entries <= 'd0;
-      full <= 1'b0;
-      empty <= 1'b0;
-      room_avail <= DEPTH;
+      full        <= 1'b0;
+      empty       <= 1'b1;
+      room_avail  <= DEPTH;
     end
 
     else begin
-      wptr <= wptr_next;
-      rptr <= rptr_next;
+      wptr        <= wptr_next;
+      rptr        <= rptr_next;
       num_entries <= num_entries_next;
-      full <= full_next;
-      empty <= empty_next;
-      room_avail <= room_avail_next;
+      full        <= full_next;
+      empty       <= empty_next;
+      room_avail  <= room_avail_next;
     end
   end
 

@@ -17,14 +17,14 @@
 #define TEST_RO_OP
 #define TEST_WO_OP
 
-enum Test_Phase { FULL, EMPTY, RW, RO, WO };
+enum Test_Phase { FULL_TEST, EMPTY_TEST, RW_TEST, RO_TEST, WO_TEST };
 
 std::unique_ptr<VerilatedContext> init_ctx();
 std::unique_ptr<Vfifo> init_fifo(VerilatedContext *ctx);
 
 int main(int argc, char *argv[]) {
   std::size_t data = 0;
-  Test_Phase tp = FULL;
+  Test_Phase tp = FULL_TEST;
 
   Verilated::mkdir("logs");
 
@@ -41,23 +41,26 @@ int main(int argc, char *argv[]) {
       fifo->rst_n = HIGH;
 
       switch (tp) {
-      case FULL:
+      case FULL_TEST:
         fifo->wen = HIGH;
+        fifo->ren = LOW;
         if (fifo->clk == HIGH)
           fifo->wdata = data++;
         if (fifo->full == HIGH) {
-          tp = EMPTY;
+          tp = EMPTY_TEST;
         }
         break;
-      case EMPTY:
+      case EMPTY_TEST:
+        fifo->wen = LOW;
+        fifo->ren = HIGH;
         if (fifo->empty == HIGH)
-          tp = RW;
+          tp = RW_TEST;
         break;
-      case RW:
+      case RW_TEST:
         break;
-      case RO:
+      case RO_TEST:
         break;
-      case WO:
+      case WO_TEST:
         break;
       default:
         break;
