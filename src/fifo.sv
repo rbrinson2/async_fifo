@@ -32,8 +32,7 @@ module fifo #(
 
   localparam logic [FIFO_PTR:0] DEPTH = FIFO_DEPTH[FIFO_PTR:0];
 
-  //logic [FIFO_DATAWIDTH-1:0] mem [FIFO_DEPTH-1:0];
-
+  logic [FIFO_DATAWIDTH-1:0] wdata_reg;
   logic [FIFO_PTR:0] wptr, wptr_next;
   logic [FIFO_PTR:0] rptr, rptr_next;
   logic [FIFO_PTR:0] num_entries, num_entries_next;
@@ -56,7 +55,11 @@ module fifo #(
   );
 
   assign rdata = ren ? rdata_w : 'b0;
-  assign wdata_w = wen ? wdata : 'b0;
+  assign wdata_w = wdata_reg;
+
+  always_ff @(posedge clk) begin
+    if (wen) wdata_reg <= wdata;
+  end
 
   always_ff @(*) begin : writePointerLogic
     wptr_next = wptr;
@@ -64,7 +67,7 @@ module fifo #(
     if (wen) begin
       if (full | empty) wptr_next = wptr;
       else begin
-        if (wptr == DEPTH) wptr_next = 'b0;
+        if (wptr == DEPTH-1) wptr_next = 'b0;
         else wptr_next += 1'b1;
       end
     end
@@ -77,7 +80,7 @@ module fifo #(
     if (ren) begin
       if (full | empty) rptr_next = rptr;
       else begin
-        if (rptr == DEPTH) rptr_next = 'b0;
+        if (rptr == DEPTH-1) rptr_next = 'b0;
         else rptr_next += 1'b1;
       end
     end

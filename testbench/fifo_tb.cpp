@@ -6,7 +6,7 @@
 
 #include "Vfifo.h"
 
-#define SIM_TIME 300
+#define SIM_TIME 90
 #define RESET_DELAY 5
 #define HIGH 1
 #define LOW 0
@@ -17,14 +17,15 @@
 #define TEST_RO_OP
 #define TEST_WO_OP
 
-enum Test_Phase { FULL_TEST, EMPTY_TEST, RW_TEST, RO_TEST, WO_TEST };
+enum Test_Phase { FULL_TEST, EMPTY_TEST, RW_TEST, FINISH };
 
 std::unique_ptr<VerilatedContext> init_ctx();
 std::unique_ptr<Vfifo> init_fifo(VerilatedContext *ctx);
 
 int main(int argc, char *argv[]) {
   std::size_t data = 0;
-  Test_Phase tp = FULL_TEST;
+  Test_Phase tp = RW_TEST;
+  int rw_counter = 0;
 
   Verilated::mkdir("logs");
 
@@ -54,13 +55,24 @@ int main(int argc, char *argv[]) {
         fifo->wen = LOW;
         fifo->ren = HIGH;
         if (fifo->empty == HIGH)
-          tp = RW_TEST;
+          tp = FINISH;
         break;
       case RW_TEST:
+        if (rw_counter < 10) {
+          fifo->wen = HIGH;
+          fifo->ren = LOW;
+          if (fifo->clk == HIGH)
+            fifo->wdata = data++;
+        } else if (rw_counter >= 10 && rw_counter < 20) {
+          fifo->wen = HIGH;
+          fifo->ren = HIGH;
+          if (fifo->clk == HIGH)
+            fifo->wdata = data++;
+        } else if (rw_counter >= 20)
+          tp = FULL_TEST;
+        rw_counter++;
         break;
-      case RO_TEST:
-        break;
-      case WO_TEST:
+      case FINISH:
         break;
       default:
         break;

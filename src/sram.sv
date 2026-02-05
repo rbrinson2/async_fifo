@@ -27,7 +27,7 @@ module sram
     mem[s_wptr] = wdata;
   end
 
-  always @(rd_clk) begin
+  always @(posedge rd_clk) begin
     rdata = mem[s_rptr];
   end
   
