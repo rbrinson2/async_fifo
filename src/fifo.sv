@@ -30,16 +30,23 @@ module fifo #(
     output logic empty
 );
   
-  logic [FIFO_DATAWIDTH-1:0] mem [FIFO_DEPTH-1:0];
+  // logic [FIFO_DATAWIDTH-1:0] mem [FIFO_DEPTH-1:0];
   logic [FIFO_PTR-1:0] wptr, rptr, dblnextptr, nextptr;
 
   // --------- Read and Write Logic --------- //
-  always_ff @(posedge clk) begin
-    if (wen) mem[wptr] <= wdata;
-  end
-  always_ff @(posedge clk) begin
-    if (ren) rdata <= mem[rptr];
-  end
+  sram #(
+    .SRAM_DATAWIDTH(FIFO_DATAWIDTH),
+    .SRAM_DEPTH    (FIFO_DEPTH),
+    .SRAM_PTR      (FIFO_PTR)
+   ) sram (
+    .w_clk (clk),
+    .rd_clk(clk),
+    .wptr  (wptr),
+    .rptr  (rptr),
+    .wdata (wdata),
+    .wen   (wen),
+    .rdata (rdata)
+  );
 
   // --------- Pointer Logic --------- //
   always_ff @(posedge clk) begin
