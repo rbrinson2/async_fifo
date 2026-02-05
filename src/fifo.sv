@@ -8,7 +8,7 @@ module fifo #(
     input logic clk,
     rst_n,
 
-    // ---------- Inputs ---------- \\
+    // ---------- Inputs ---------- //
     // -- Write --
     input logic [FIFO_DATAWIDTH-1:0] wdata, 
     input logic wen,
@@ -18,116 +18,104 @@ module fifo #(
 
     // -- Flags --
     
-    // ---------- Outputs ---------- \\
+    // ---------- Outputs ---------- //
     // -- Write --
-    output logic [FIFO_PTR:0] room_avail,
+    output logic [FIFO_PTR-1:0] room_avail,
     // -- Read --
     output logic [FIFO_DATAWIDTH-1:0] rdata,
-    output logic [FIFO_PTR:0] data_avail,
+    output logic [FIFO_PTR-1:0] data_avail,
 
     // -- Flags --
     output logic full,
     output logic empty
 );
+  
+  logic [FIFO_DATAWIDTH-1:0] mem [FIFO_DEPTH-1:0];
+  logic [FIFO_PTR-1:0] wptr, rptr, dblnextptr, nextptr;
 
-  localparam logic [FIFO_PTR:0] DEPTH = FIFO_DEPTH[FIFO_PTR:0];
-
-  logic [FIFO_DATAWIDTH-1:0] wdata_reg;
-  logic [FIFO_PTR:0] wptr, wptr_next;
-  logic [FIFO_PTR:0] rptr, rptr_next;
-  logic [FIFO_PTR:0] num_entries, num_entries_next;
-  logic [FIFO_PTR:0] room_avail_next;
-  logic full_next, empty_next;
-
-  wire [FIFO_DATAWIDTH-1:0] rdata_w;
-  wire [FIFO_DATAWIDTH-1:0] wdata_w;
-
-  sram #(
-    .SRAM_DATAWIDTH(FIFO_DATAWIDTH),
-    .SRAM_DEPTH(FIFO_DEPTH)
-   ) sram0 (
-    .w_clk (clk),
-    .rd_clk(clk),
-    .s_wptr  (wptr[FIFO_PTR-1:0]),
-    .s_rptr  (rptr[FIFO_PTR-1:0]),
-    .wdata (wdata_w),
-    .rdata (rdata_w)
-  );
-
-  assign rdata = ren ? rdata_w : 'b0;
-  assign wdata_w = wdata_reg;
-
+  // --------- Read and Write Logic --------- //
   always_ff @(posedge clk) begin
-    if (wen) wdata_reg <= wdata;
+    if (wen) mem[wptr] <= wdata;
+  end
+  always_ff @(posedge clk) begin
+    if (ren) rdata <= mem[rptr];
   end
 
-  always_ff @(*) begin : writePointerLogic
-    wptr_next = wptr;
-
-    if (wen) begin
-      if (full | empty) wptr_next = wptr;
-      else begin
-        if (wptr == DEPTH-1) wptr_next = 'b0;
-        else wptr_next += 1'b1;
-      end
-    end
-
-  end : writePointerLogic
-
-  always_ff @(*) begin : readPointerLogic
-
-    rptr_next = rptr;
-    if (ren) begin
-      if (full | empty) rptr_next = rptr;
-      else begin
-        if (rptr == DEPTH-1) rptr_next = 'b0;
-        else rptr_next += 1'b1;
-      end
-    end
-
-  end : readPointerLogic
-
-  always_ff @(*) begin : numEntriesCalculation
-
-    num_entries_next = num_entries;
-
-    if (wen && ren) num_entries_next = num_entries;
-    else if (wen) begin 
-      if (num_entries == DEPTH) num_entries_next = num_entries;
-      else num_entries_next = num_entries + 1'b1;
-    end
-    else if (ren) begin
-      if (num_entries == 'd0) num_entries_next = num_entries;
-      else num_entries_next = num_entries - 1'b1;
-    end
-
-  end : numEntriesCalculation
-
-  assign full_next = (num_entries_next == DEPTH);
-  assign empty_next = (num_entries_next == 'b0);
-  assign data_avail = num_entries;
-  assign room_avail_next = (DEPTH - num_entries_next);
-
-  always_ff @(posedge clk or negedge rst_n) begin
+  // --------- Pointer Logic --------- //
+  always_ff @(posedge clk) begin
     if (!rst_n) begin
-      wptr        <= 'd0;
-      rptr        <= 'd0;
-      num_entries <= 'd0;
-      full        <= 1'b0;
-      empty       <= 1'b1;
-      room_avail  <= DEPTH;
+      wptr <= 'b0;
+    end else if (wen) begin
+      if (!full || ren) wptr <= wptr + 1'b1;
     end
-
-    else begin
-      wptr        <= wptr_next;
-      rptr        <= rptr_next;
-      num_entries <= num_entries_next;
-      full        <= full_next;
-      empty       <= empty_next;
-      room_avail  <= room_avail_next;
+  end
+  always_ff @(posedge clk) begin
+    if (!rst_n) begin
+      rptr <= 'b0;
+    end else if (ren) begin
+      if (!empty) begin
+        rptr <= rptr + 1'b1;
+      end 
     end
   end
 
+  // ---------- Calculate Fill ---------- //
+  always_ff @(posedge clk) begin
+    if (!rst_n) begin
+      room_avail <= FIFO_DEPTH - 1;
+      data_avail <= 'b0;
+    end else begin
+      casez ({wen, ren, !full, !empty})
+        4'b01?1 : begin
+          room_avail <= room_avail + 1'b1;
+          data_avail <= data_avail - 1'b1;
+        end
+        4'b101? : begin
+          room_avail <= room_avail - 1'b1;
+          data_avail <= data_avail + 1'b1;
+        end
+        4'b1110 : begin
+          room_avail <= room_avail - 1'b1;
+          data_avail <= data_avail + 1'b1;
+        end
+        default : begin
+          room_avail <= room_avail;
+          data_avail <= data_avail;
+        end 
+      endcase
+    end
+  end
+
+  // ---------- Calculate Empty/Full ----------- //
+  assign dblnextptr = wptr + 'd2;
+  assign nextptr = rptr + 'd1;
+  always_ff @(posedge clk) begin
+    if (!rst_n) begin
+      full <= 'b0;
+      empty <= 'b1;
+    end else begin
+      casez ({wen, ren, !full, !empty})
+        4'b01?1 : begin
+          full <= 1'b0;
+          empty <= (nextptr == wptr);
+        end
+        4'b101? : begin
+          full <= (dblnextptr == rptr);
+          empty <= 1'b0;
+        end
+        4'b11?0 : begin
+          full <= 1'b0;
+          empty <= 1'b0;
+        end
+        4'b11?1 : begin
+          full <= full;
+          empty <= 1'b0;
+        end
+        default : begin
+        end 
+      endcase
+    end
+  end
 
   initial begin
     $dumpfile("logs/fifo.vcd");
