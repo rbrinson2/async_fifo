@@ -96,25 +96,26 @@ module fifo #(
   // ---------- Calculate Empty/Full ----------- //
   assign dblnextptr = wptr + 'd2;
   assign nextptr = rptr + 'd1;
+
   always_ff @(posedge clk) begin
     if (!rst_n) begin
       full <= 'b0;
       empty <= 'b1;
     end else begin
       casez ({wen, ren, !full, !empty})
-        4'b01?1 : begin
+        4'b01?1 : begin // Successful read
           full <= 1'b0;
           empty <= (nextptr == wptr);
         end
-        4'b101? : begin
+        4'b101? : begin // Successful write
           full <= (dblnextptr == rptr);
           empty <= 1'b0;
         end
-        4'b11?0 : begin
+        4'b11?0 : begin // Successful write, failed read
           full <= 1'b0;
           empty <= 1'b0;
         end
-        4'b11?1 : begin
+        4'b11?1 : begin // Successful read and write
           full <= full;
           empty <= 1'b0;
         end
