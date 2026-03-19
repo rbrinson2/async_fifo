@@ -1,0 +1,18 @@
+
+
+standard="2008"
+
+[libraries.work]
+files = [
+    'testbench/*.vhdl'
+    'testbench/*.vhd'
+    'src/*.vhdl'
+    'src/*.vhd'
+]
+is_third_party = false
+
+
+[lint]
+unused = "error"                    # Upgrade unused diagnostic to error
+unnecessary_work_library = false    # Disable linting for 'library work;'
+unused_signal = true                # Enable with default severity

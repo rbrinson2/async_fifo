@@ -2,4 +2,6 @@ obj_dir/
 logs/
 AGENTS.md
 
+work/
+
 .cache/
