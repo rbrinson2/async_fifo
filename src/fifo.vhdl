@@ -15,5 +15,6 @@ entity fifo is
     port (
         clk : in STD_ULOGIC;
         rst : in STD_ULOGIC
+        
     );
 end entity fifo;

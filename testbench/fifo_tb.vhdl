@@ -10,7 +10,6 @@ end entity fifo_tb;
 
 
 architecture rtl of fifo_tb is
-    
 begin
 
 
