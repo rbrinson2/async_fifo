@@ -17,3 +17,12 @@ entity fifo is
         rst : in STD_ULOGIC
     );
 end entity fifo;
+
+
+architecture rtl of fifo is
+    
+begin
+    
+    
+    
+end architecture rtl;
