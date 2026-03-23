@@ -10,31 +10,39 @@ end entity fifo_tb;
 
 
 architecture rtl of fifo_tb is
-    constant HIGH : STD_LOGIC := '1';
-    constant LOW : STD_LOGIC := '0';
+    constant HIGH           : STD_LOGIC := '1';
+    constant LOW            : STD_LOGIC := '0';
+    constant FIFO_DATAWIDTH : NATURAL   := 32;
+    constant FIFO_DEPTH     : NATURAL   := 16;
+    constant FIFO_PTR       : NATURAL   := 4;
 
-    type sim_t is (TEST_FULL, TEST_EMPTY, TEST_RW, TEST_RO, TEST_WO);
-    signal sim : sim_t;
+    type sim_t is (TEST_FULL, TEST_EMPTY, TEST_RW, FINISH);
+    signal sim              : sim_t;
 
-    signal clk : std_logic := '0';
-    signal rst : std_logic;
+    signal clk              : std_ulogic := '0';
+    signal rst_n            : std_ulogic;
 
-    signal count : INTEGER range 0 to 32;
+    signal wen              : STD_ULOGIC;
+    signal ren              : STD_ULOGIC;
+
+    signal wdata            : STD_ULOGIC_VECTOR (FIFO_DATAWIDTH-1 downto 0);
+
+
+
+    signal count            : INTEGER range 0 to 32;
 begin
 
     clk <= not clk after 10 ns;
-    rst <= '1', '0' after 20 ns;
+    rst_n <= '1', '0' after 20 ns;
 
-    STIMULUS : process(clk, rst)
+    STIMULUS : process(clk, rst_n)
     begin
-        if rst = HIGH then
+        wen <= '0';
+        if rst_n = HIGH then
             count <= 0;
         elsif (rising_edge(clk)) then
             case sim is
                 when TEST_FULL =>
-                    if (count >= 10) then std.env.stop; 
-                    end if;
-                when others =>
             end case;
 
             count <= count + 1;
@@ -42,6 +50,11 @@ begin
     end process STIMULUS ;
 
     DUT: entity work.fifo
+     generic map(
+        FIFO_DATAWIDTH => FIFO_DATAWIDTH,
+        FIFO_DEPTH => FIFO_DEPTH,
+        FIFO_PTR => FIFO_PTR
+    )
      port map(
         clk => clk,
         rst_n => rst_n,
