@@ -13,9 +13,28 @@ entity fifo is
         FIFO_PTR        : NATURAL := 4
     );
     port (
-        clk : in STD_ULOGIC;
-        rst : in STD_ULOGIC
+        ------------------------------------------------------------ Inputs
+        clk         : in STD_ULOGIC;
+        rst_n       : in STD_ULOGIC;
         
+        ---------- Write
+        wdata       : STD_ULOGIC_VECTOR (FIFO_DATAWIDTH-1 downto 0);
+        wen         : STD_ULOGIC;
+
+        ---------- Read
+        ren         : STD_ULOGIC;
+
+        ------------------------------------------------------------ Outputs
+
+        ---------- Write
+        room_avail  : STD_ULOGIC_VECTOR (FIFO_PTR-1 downto 0);
+        ---------- Read
+        rdata       : STD_ULOGIC_VECTOR (FIFO_DATAWIDTH-1 downto 0);
+        data_avail  : STD_ULOGIC_VECTOR (FIFO_PTR-1 downto 0);
+
+        ---------- Flags
+        full        : STD_ULOGIC;
+        empty       : STD_ULOGIC
     );
 end entity fifo;
 

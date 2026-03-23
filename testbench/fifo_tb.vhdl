@@ -10,35 +10,49 @@ end entity fifo_tb;
 
 
 architecture rtl of fifo_tb is
+    constant HIGH : STD_LOGIC := '1';
+    constant LOW : STD_LOGIC := '0';
+
+    type sim_t is (TEST_FULL, TEST_EMPTY, TEST_RW, TEST_RO, TEST_WO);
+    signal sim : sim_t;
+
     signal clk : std_logic := '0';
     signal rst : std_logic;
+
+    signal count : INTEGER range 0 to 32;
 begin
 
     clk <= not clk after 10 ns;
     rst <= '1', '0' after 20 ns;
 
-    process (clk) is
-        variable count : integer := 0;
+    STIMULUS : process(clk, rst)
     begin
-        if (rising_edge(clk)) then
-            count := count + 1;
-        end if;
-        if (count >= 10) then
-            std.env.stop;
-        end if;
-    end process;
+        if rst = HIGH then
+            count <= 0;
+        elsif (rising_edge(clk)) then
+            case sim is
+                when TEST_FULL =>
+                    if (count >= 10) then std.env.stop; 
+                    end if;
+                when others =>
+            end case;
 
+            count <= count + 1;
+        end if;
+    end process STIMULUS ;
 
-    dut: entity work.fifo
-     generic map(
-        FIFO_DATAWIDTH => 32,
-        FIFO_DEPTH => 16,
-        FIFO_PTR => 4
-    )
+    DUT: entity work.fifo
      port map(
         clk => clk,
-        rst => rst
+        rst_n => rst_n,
+        wdata => wdata,
+        wen => wen,
+        ren => ren,
+        room_avail => room_avail,
+        rdata => rdata,
+        data_avail => data_avail,
+        full => full,
+        empty => empty
     );
-
 
 end architecture rtl;
