@@ -17,6 +17,17 @@ begin
     clk <= not clk after 10 ns;
     rst <= '1', '0' after 20 ns;
 
+    process (clk) is
+        variable count : integer := 0;
+    begin
+        if (rising_edge(clk)) then
+            count := count + 1;
+        end if;
+        if (count >= 10) then
+            std.env.stop;
+        end if;
+    end process;
+
 
     dut: entity work.fifo
      generic map(

@@ -21,7 +21,6 @@ end entity fifo;
 
 
 architecture rtl of fifo is
-    
 begin
     
     
