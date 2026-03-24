@@ -8,9 +8,8 @@ use IEEE.MATH_REAL.all;
 
 entity fifo is
     generic (
-        FIFO_DATAWIDTH  : NATURAL := 32;
-        FIFO_DEPTH      : NATURAL := 16;
-        FIFO_PTR        : NATURAL := 4
+        FIFO_DATAWIDTH  : NATURAL := 16;
+        FIFO_DEPTH      : NATURAL := 32
     );
     port (
         ------------------------------------------------------------ Inputs
@@ -27,10 +26,10 @@ entity fifo is
         ------------------------------------------------------------ Outputs
 
         ---------- Write
-        room_avail  : STD_ULOGIC_VECTOR (FIFO_PTR-1 downto 0);
+        room_avail  : INTEGER range 0 to FIFO_DEPTH;
         ---------- Read
         rdata       : STD_ULOGIC_VECTOR (FIFO_DATAWIDTH-1 downto 0);
-        data_avail  : STD_ULOGIC_VECTOR (FIFO_PTR-1 downto 0);
+        data_avail  : INTEGER range 0 to FIFO_DEPTH;
 
         ---------- Flags
         full        : STD_ULOGIC;
