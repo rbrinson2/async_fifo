@@ -26,21 +26,98 @@ entity fifo is
         ------------------------------------------------------------ Outputs
 
         ---------- Write
-        room_avail  : INTEGER range 0 to FIFO_DEPTH;
+        room_avail  : out INTEGER range 0 to FIFO_DEPTH;
         ---------- Read
-        rdata       : STD_ULOGIC_VECTOR (FIFO_DATAWIDTH-1 downto 0);
-        data_avail  : INTEGER range 0 to FIFO_DEPTH;
+        rdata       : out STD_ULOGIC_VECTOR (FIFO_DATAWIDTH-1 downto 0);
+        data_avail  : out INTEGER range 0 to FIFO_DEPTH;
 
         ---------- Flags
-        full        : STD_ULOGIC;
-        empty       : STD_ULOGIC
+        full        : out STD_ULOGIC;
+        empty       : out STD_ULOGIC
     );
 end entity fifo;
 
 
 architecture rtl of fifo is
+    constant HIGH       : STD_ULOGIC := '1';
+    constant LOW        : STD_ULOGIC := '0';
+
+    type mem_t is array (0 to FIFO_DEPTH-1) of STD_ULOGIC_VECTOR (FIFO_DATAWIDTH-1 downto 0);
+    signal mem : mem_t;
+    
+    signal 
+        wptr, 
+        rptr, 
+        dblnextptr, 
+        nextptr  
+    : UNSIGNED(4 downto 0);
+
+    signal efstate : STD_ULOGIC_VECTOR (3 downto 0);
 begin
-    
-    
-    
+    -------------------- Memory Read and Write
+    RW_PROC : process (clk) is
+    begin
+        if (rising_edge(clk)) then 
+            if (wen) then mem(to_integer(wptr)) <= wdata; end if;
+            if (ren) then rdata <= mem(to_integer(rptr)); end if;
+        end if;
+    end process;
+
+    -------------------- Pointer Logic
+    ---------- Write Pointer
+    WPTR_LOG: process(clk)
+    begin
+        if rising_edge(clk) then
+            if (rst_n = LOW) then
+                wptr <= (others => '0');
+            elsif (wen) then
+                if (not full or ren) then wptr <= wptr +1; end if;
+            end if;
+        end if;
+    end process WPTR_LOG;
+    ---------- Read Pointer
+    RPTR_LOG: process(clk)
+    begin
+        if rising_edge(clk) then
+            if (rst_n = LOW) then
+                rptr <= (others => '0'); 
+            elsif (ren) then
+                if (not empty) then rptr <= rptr + 1; end if;
+            end if;
+        end if;
+    end process RPTR_LOG;
+
+
+    ---------------- Calculate Full/Empty
+    efstate <= (wen, ren, not full, not empty);
+    dblnextptr <= wptr + 2;
+    nextptr <= rptr + 1;
+    EF_CALC: process (clk) is
+    begin
+        if (rising_edge(clk)) then
+            if (rst_n = LOW) then 
+                empty <= '0';
+                full <= '0';
+            else 
+                case (efstate) is
+                    when "01-1" => -- Successful Read
+                        full <= LOW;
+                        empty <= HIGH when (nextptr = wptr) else
+                                 LOW;
+                    when "1011" => -- Successful Write
+                        full <= HIGH when (dblnextptr = rptr) else
+                                LOW;
+                        empty <= LOW;
+                    when "11-0" => -- Successful write, failed read
+                        full <= LOW;
+                        empty <= LOW;
+                    when "11-1" => -- Succesfull read and write
+                        full <= full;
+                        empty <= LOW;
+                    when others =>
+                end case;
+            end if;
+        end if;
+    end process;
+
 end architecture rtl;

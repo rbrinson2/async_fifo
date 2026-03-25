@@ -45,10 +45,10 @@ begin
         variable start : INTEGER := -1;
         variable stop  : INTEGER := -1;
     begin
-        wen <= '0';
-        ren <= '0';
-
         if (rising_edge(clk)) then
+            wen <= '0';
+            ren <= '0';
+
             case sim is
                 when TEST_FULL =>
                     wen <= '1';
