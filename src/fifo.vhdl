@@ -59,7 +59,9 @@ begin
     begin
         if (rising_edge(clk)) then 
             if (wen) then mem(to_integer(wptr)) <= wdata; end if;
-            if (ren) then rdata <= mem(to_integer(rptr)); end if;
+            if (ren) then rdata <= mem(to_integer(rptr));
+            else rdata <= (others => '0');
+            end if;
         end if;
     end process;
 
@@ -79,7 +81,7 @@ begin
     RPTR_LOG: process(clk)
     begin
         if rising_edge(clk) then
-            if (rst_n = LOW) then
+            if (not rst_n) then
                 rptr <= (others => '0'); 
             elsif (ren) then
                 if (not empty) then rptr <= rptr + 1; end if;
@@ -95,11 +97,11 @@ begin
     EF_CALC: process (clk) is
     begin
         if (rising_edge(clk)) then
-            if (rst_n = LOW) then 
+            if (not rst_n) then 
                 empty <= '0';
                 full <= '0';
             else 
-                case (efstate) is
+                case? (efstate) is
                     when "01-1" => -- Successful Read
                         full <= LOW;
                         empty <= HIGH when (nextptr = wptr) else
@@ -115,7 +117,7 @@ begin
                         full <= full;
                         empty <= LOW;
                     when others =>
-                end case;
+                end case?;
             end if;
         end if;
     end process;

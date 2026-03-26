@@ -67,6 +67,7 @@ begin
 
                     wen <= '1';
                     ren <= '1';
+                    wdata <= STD_ULOGIC_VECTOR(to_unsigned(count, wdata'length));
                     start := start + 1;
 
                     if start = stop then sim <= FINISH; end if;
