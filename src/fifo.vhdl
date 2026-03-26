@@ -60,9 +60,7 @@ begin
     begin
         if (rising_edge(clk)) then 
             if (wen) then mem(to_integer(wptr)) <= wdata; end if;
-            if (ren) then rdata <= mem(to_integer(rptr));
-            else rdata <= (others => '0');
-            end if;
+            rdata <= mem(to_integer(rptr));
         end if;
     end process;
 

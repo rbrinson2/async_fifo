@@ -45,36 +45,34 @@ begin
         variable start : INTEGER := -1;
         variable stop  : INTEGER := -1;
     begin
-        if (rising_edge(clk)) then
-            wen <= '0';
-            ren <= '0';
+        wen <= '0';
+        ren <= '0';
 
-            case sim is
-                when TEST_FULL =>
-                    wen <= '1';
-                    wdata <= STD_ULOGIC_VECTOR(to_unsigned(count, wdata'length));
-                    if full then sim <= TEST_EMPTY; end if;
+        case sim is
+            when TEST_FULL =>
+                wen <= '1';
+                wdata <= STD_ULOGIC_VECTOR(to_unsigned(count, wdata'length));
+                if full then sim <= TEST_EMPTY; end if;
 
-                when TEST_EMPTY =>
-                    ren <= '1';
-                    if empty then sim <= TEST_RW; end if;
+            when TEST_EMPTY =>
+                ren <= '1';
+                if empty then sim <= TEST_RW; end if;
 
-                when TEST_RW =>
-                    if start = -1 then 
-                        start := count;
-                        stop := count + 20;
-                    end if;
+            when TEST_RW =>
+                if start = -1 then 
+                    start := count;
+                    stop := count + 20;
+                end if;
 
-                    wen <= '1';
-                    ren <= '1';
-                    wdata <= STD_ULOGIC_VECTOR(to_unsigned(count, wdata'length));
-                    start := start + 1;
+                wen <= '1';
+                ren <= '1';
+                wdata <= STD_ULOGIC_VECTOR(to_unsigned(count, wdata'length));
+                start := start + 1;
 
-                    if start = stop then sim <= FINISH; end if;
+                if start = stop then sim <= FINISH; end if;
 
-                when FINISH => std.env.stop;
-            end case;
-        end if;
+            when FINISH => std.env.stop;
+        end case;
     end process STIMULUS ;
 
     COUNTER : process(clk)
