@@ -41,6 +41,7 @@ end entity fifo;
 architecture rtl of fifo is
     constant HIGH       : STD_ULOGIC := '1';
     constant LOW        : STD_ULOGIC := '0';
+    constant FIFO_PTR   : INTEGER := INTEGER(CEIL(LOG2(REAL(FIFO_DEPTH))));
 
     type mem_t is array (0 to FIFO_DEPTH-1) of STD_ULOGIC_VECTOR (FIFO_DATAWIDTH-1 downto 0);
     signal mem : mem_t;
@@ -50,7 +51,7 @@ architecture rtl of fifo is
         rptr, 
         dblnextptr, 
         nextptr  
-    : UNSIGNED(4 downto 0);
+    : UNSIGNED(FIFO_PTR-1 downto 0);
 
     signal efstate : STD_ULOGIC_VECTOR (3 downto 0);
 begin
@@ -70,7 +71,7 @@ begin
     WPTR_LOG: process(clk)
     begin
         if rising_edge(clk) then
-            if (rst_n = LOW) then
+            if (not rst_n) then
                 wptr <= (others => '0');
             elsif (wen) then
                 if (not full or ren) then wptr <= wptr +1; end if;

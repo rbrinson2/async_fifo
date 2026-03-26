@@ -81,7 +81,7 @@ begin
     begin
         if rising_edge(clk) then
             count <= count + 1;
-            if count >= 100 then std.env.stop; end if;
+            -- if count >= 100 then std.env.stop; end if;
         end if;
     end process COUNTER;
 
